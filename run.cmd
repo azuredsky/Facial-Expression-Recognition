@@ -1,0 +1,1 @@
+python ./freeze_graph.py --input_graph=./nn_model.pbtxt --input_checkpoint=./ckpt/emotion_model-30001 --output_graph=./emotion_model_frozen.pb --output_node_names=output_node

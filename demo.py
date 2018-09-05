@@ -75,16 +75,29 @@ def draw_emotion():
   pass
 
 def demo(modelPath, showBox=False):
-  face_x = tf.placeholder(tf.float32, [None, 2304])
-  y_conv = deepnn(face_x)
-  probs = tf.nn.softmax(y_conv)
+  face_x = tf.placeholder(dtype=tf.float32, name='inputs', shape=[None, 2304])
 
+  #parser = argparse.ArgumentParser()
+  #parser.add_argument("--fz_model_fn",default = "./emotion_model_frozen.pb",type=str,help="Frozen model file to import")
+  #args = parser.parse_args()
+  #graph = load_graph(args.fz_model_fn)
+  
+  #for op in graph.get_operations():
+    #print(op.name,op.values())
+  
+  #x = graph.get_tensor_by_name('prefix/inputs:0')
+  #probs = graph.get_tensor_by_name('prefix/output_node:0')
+  
+  y_conv = deepnn(face_x)
+  probs = tf.nn.softmax(y_conv, name='output_node')
+  
+  print("probs",probs)
   saver = tf.train.Saver()
   ckpt = tf.train.get_checkpoint_state(modelPath)
   sess = tf.Session()
   if ckpt and ckpt.model_checkpoint_path:
-    saver.restore(sess, ckpt.model_checkpoint_path)
-    print('Restore model sucsses!!\nNOTE: Press SPACE on keyboard to capture face.')
+     saver.restore(sess, ckpt.model_checkpoint_path)
+     print('Restore model sucsses!!\nNOTE: Press SPACE on keyboard to capture face.')
 
   feelings_faces = []
   for index, emotion in enumerate(EMOTIONS):
@@ -102,12 +115,21 @@ def demo(modelPath, showBox=False):
         [x,y,w,h] = face_coor
         cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
 
-    if cv2.waitKey(1) & 0xFF == ord(' '):
+    if cv2.waitKey(1):
 
       if detected_face is not None:
         cv2.imwrite('a.jpg', detected_face)
         tensor = image_to_tensor(detected_face)
+
         result = sess.run(probs, feed_dict={face_x: tensor})
+
+        print(result)
+
+        print("probs",probs)
+        tf.train.write_graph(sess.graph_def, './', "nn_model.pbtxt", as_text=True)
+        for op in tf.get_default_graph().get_operations():
+            print(op.name)
+
         # print(result)
     if result is not None:
       for index, emotion in enumerate(EMOTIONS):

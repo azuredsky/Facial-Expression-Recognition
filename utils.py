@@ -106,8 +106,10 @@ def input_data(
     reshape=True,
     seed=None):
   training_size = 28709
-  validation_size = 3589
-  test_size = 3589
+  #validation_size = 3589
+  #test_size = 3589
+  validation_size = 358
+  test_size = 358
 
   train_faces, train_emotions = load_data(train_dir)
   print('Dataset load success!!')
